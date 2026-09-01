@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>日々のひとこと · 오늘의 일본어</title>
+
+<!-- PWA: 홈화면 아이콘 / 전체화면 실행 설정 -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1B2A3B">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="日々のひとこと">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ai:        #1B2A3B;
+    --washi:     #F7F3E7;
+    --sumi:      #201E1B;
+    --sumi-soft: #55524B;
+    --hanko:     #B8412F;
+    --hanko-deep:#8E2F21;
+    --matsu:     #4B6B54;
+    --gold:      #C79A4B;
+    --line:      rgba(32,30,27,0.12);
+    --line-on-ai:rgba(247,243,231,0.16);
+    --shadow:    0 1px 0 rgba(0,0,0,0.04);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 20% -10%, rgba(199,154,75,0.10), transparent 55%),
+      radial-gradient(ellipse at 100% 0%, rgba(184,65,47,0.08), transparent 45%),
+      var(--ai);
+    color: var(--washi);
+    font-family:'Noto Sans KR', sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding: 40px 16px 80px;
+  }
+  .app{ width:100%; max-width:600px; }
+
+  header{ padding: 4px 4px 28px; }
+  .date-row{
+    display:flex; align-items:baseline; justify-content:space-between;
+    font-size:13px; letter-spacing:.04em; color: rgba(247,243,231,0.55);
+    margin-bottom:14px;
+  }
+  .date-row .stamp{ display:inline-flex; align-items:center; gap:6px; color: var(--gold); }
+  h1{
+    font-family:'Shippori Mincho', serif; font-weight:800; font-size: 38px;
+    line-height:1.25; margin:0 0 6px; letter-spacing:.01em;
+  }
+  h1 .jp{ display:block; font-size:17px; font-weight:500; color:rgba(247,243,231,0.5); letter-spacing:.18em; margin-top:6px;}
+  .tagline{ margin:0; font-size:16.5px; color:rgba(247,243,231,0.62); line-height:1.6; max-width:44ch;}
+
+  .progress-wrap{ margin-top:22px; }
+  .progress-labels{ display:flex; justify-content:space-between; font-size:12.5px; color:rgba(247,243,231,0.55); margin-bottom:7px;}
+  .progress-labels b{ color:var(--washi); font-weight:600; }
+  .progress-track{ position:relative; height:5px; background: rgba(247,243,231,0.14); overflow:hidden; }
+  .progress-fill{ position:absolute; inset:0 auto 0 0; width:0%; background: linear-gradient(90deg, var(--hanko), var(--gold)); transition: width .5s cubic-bezier(.4,0,.2,1); }
+
+  .tabs{ display:flex; gap:4px; margin-top:26px; border-bottom:1px solid var(--line-on-ai); overflow-x:auto; scrollbar-width:none; }
+  .tabs::-webkit-scrollbar{ display:none; }
+  .tab{ appearance:none; border:none; background:transparent; cursor:pointer; color: rgba(247,243,231,0.5); font-family:'Noto Sans KR', sans-serif; font-size:16px; font-weight:500; padding:10px 13px 12px; position:relative; white-space:nowrap; }
+  .tab.active{ color: var(--washi); }
+  .tab.active::after{ content:""; position:absolute; left:10px; right:10px; bottom:-1px; height:2px; background: var(--hanko); border-radius: 2px 2px 0 0; }
+  .tab .count{ font-size:13px; color:rgba(247,243,231,0.35); margin-left:3px;}
+
+  .list{ margin-top:22px; display:flex; flex-direction:column; gap:10px; }
+  .card{ background: var(--washi); color: var(--sumi); border: 1px solid rgba(32,30,27,0.06); position:relative; overflow:hidden; box-shadow: var(--shadow); }
+  .card.done{ opacity:.55; }
+  .card-head{ display:flex; align-items:center; gap:14px; padding:16px 18px; cursor:pointer; }
+  .badge{ flex:0 0 auto; width:34px; height:34px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color: var(--washi); background: var(--sumi-soft); font-family:'Shippori Mincho',serif; }
+  .badge.travel{ background:#3E6B8A; }
+  .badge.daily{ background:#4B6B54; }
+  .badge.intermediate{ background:#8E6B3E; }
+  .card-main{ flex:1 1 auto; min-width:0; }
+  .jp-text{ font-family:'Shippori Mincho', serif; font-weight:600; font-size:26px; line-height:1.5; letter-spacing:.01em; }
+  .reading{ font-size:16px; color: var(--sumi-soft); margin-top:4px; }
+  .chev{ flex:0 0 auto; width:18px; height:18px; color: var(--sumi-soft); transition: transform .25s ease; }
+  .card.open .chev{ transform: rotate(180deg); }
+  .card-body{ max-height:0; overflow:hidden; transition: max-height .3s ease; border-top: 1px dashed var(--line); }
+  .card.open .card-body{ max-height:220px; }
+  .card-body-inner{ padding:16px 18px 18px; }
+  .meaning{ font-size:18px; line-height:1.6; margin:0 0 14px; }
+  .tags{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px;}
+  .tag{ font-size:13px; color: var(--sumi-soft); border:1px solid var(--line); padding:4px 9px; }
+  .card-actions{ display:flex; align-items:center; gap:8px; }
+  .icon-btn{ appearance:none; cursor:pointer; border:1px solid var(--line); background:transparent; width:36px; height:36px; display:flex; align-items:center; justify-content:center; color: var(--sumi); flex:0 0 auto; }
+  .icon-btn:hover{ border-color: var(--hanko); color:var(--hanko); }
+  .icon-btn.speaking{ border-color: var(--hanko); color:var(--hanko); background:rgba(184,65,47,0.06);}
+  .act-btn{ appearance:none; cursor:pointer; border:1px solid var(--sumi); background: var(--sumi); color: var(--washi); font-weight:600; font-size:15px; padding:0 16px; height:40px; }
+  .act-btn.ghost{ background:transparent; color:var(--sumi-soft); border-color:var(--line); font-weight:500;}
+  .act-btn.ghost:hover{ color:var(--hanko); border-color:var(--hanko); }
+  .spacer{ flex:1; }
+  .stamp-mark{ position:absolute; top:12px; right:14px; width:46px; height:46px; border-radius:50%; border:2px solid var(--hanko); color:var(--hanko); display:flex; align-items:center; justify-content:center; font-family:'Shippori Mincho',serif; font-weight:800; font-size:15px; transform: rotate(-14deg); opacity:0; transition: opacity .25s ease; pointer-events:none; }
+  .card.done .stamp-mark{ opacity:.85; }
+
+  .footer{ margin-top:30px; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .footer-left{ display:flex; gap:8px; }
+  .text-btn{ appearance:none; background:transparent; border:none; cursor:pointer; color: rgba(247,243,231,0.55); font-size:13px; text-decoration: underline; text-underline-offset:3px; padding:6px 2px; }
+  .text-btn:hover{ color: var(--washi); }
+  .export-btn{ appearance:none; cursor:pointer; background: transparent; color: var(--washi); border:1px solid var(--line-on-ai); font-weight:600; font-size:13px; padding:10px 16px; text-decoration:none; display:inline-block; }
+  .export-btn:hover{ border-color: var(--gold); color: var(--gold); }
+
+  .dev-row{ margin-top:14px; text-align:center; }
+  .dev-row button{ appearance:none; background:transparent; border:1px dashed rgba(247,243,231,0.25); color:rgba(247,243,231,0.4); font-size:11.5px; padding:6px 10px; cursor:pointer; }
+  .dev-row button:hover{ color:rgba(247,243,231,0.7); }
+  .dev-row .hint{ display:block; margin-top:6px; font-size:10.5px; color:rgba(247,243,231,0.28); }
+
+  .loading, .error-state{ margin-top:60px; text-align:center; color:rgba(247,243,231,0.6); font-size:14px; line-height:1.7; }
+  .error-state{ color: var(--hanko); }
+  .error-state pre{ white-space:pre-wrap; text-align:left; background:rgba(0,0,0,0.2); padding:12px; font-size:11.5px; margin-top:14px; color:rgba(247,243,231,0.7); }
+
+  @media (max-width:480px){ h1{ font-size:30px; } .jp-text{ font-size:22px; } }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="date-row">
+      <span id="todayLabel">-</span>
+      <span class="stamp" id="dayIndexLabel">-</span>
+    </div>
+    <h1>오늘의 일본어 문장<span class="jp">本日の日本語フレーズ</span></h1>
+    <p class="tagline">Claude API가 매일 새로 생성하는 문장 10개. 한 번 나온 문장은 절대 다시 나오지 않아요.</p>
+
+    <div class="progress-wrap">
+      <div class="progress-labels">
+        <span><b id="doneCount">0</b> / <span id="totalCount">10</span> 완료</span>
+        <span id="remainLabel">지금까지 생성된 문장 -개</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <div class="tabs" id="tabs"></div>
+  </header>
+
+  <main>
+    <div class="list" id="list"></div>
+  </main>
+
+  <div class="footer">
+    <div class="footer-left">
+      <button class="text-btn" id="resetDiscardBtn">폐기 기록 초기화</button>
+    </div>
+    <a class="export-btn" href="/api/export" id="exportBtn">TXT 저장</a>
+  </div>
+
+  <div class="dev-row">
+    <button id="nextDayBtn">데모: 다음 날 문장 새로 생성 →</button>
+    <button id="resetDateBtn">날짜 리셋 (실제 오늘로 복귀)</button>
+    <span class="hint">⚠ "다음 날" 버튼은 누를 때마다 Claude API가 1회 호출됩니다. 테스트 후에는 "날짜 리셋"을 눌러 실제 날짜로 되돌려주세요.</span>
+  </div>
+
+</div>
+
+<script>
+const CATEGORY_LABEL = { all:"✨ 전체", travel:"🧳 여행", daily:"💬 일상", intermediate:"📘 중급" };
+const CATEGORY_STAMP = { travel:"旅", daily:"日", intermediate:"中" };
+
+let currentFilter = "all";
+let openCardId = null;
+let today = null; // /api/today 응답 캐시
+
+/* ---------------- TTS ---------------- */
+let jaVoices = [];
+function loadVoices(){ jaVoices = speechSynthesis.getVoices().filter(v => v.lang && v.lang.startsWith("ja")); }
+loadVoices();
+if("onvoiceschanged" in speechSynthesis) speechSynthesis.onvoiceschanged = loadVoices;
+function speak(text, btnEl){
+  if(!("speechSynthesis" in window)){ alert("이 브라우저는 음성 합성을 지원하지 않아요."); return; }
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "ja-JP"; utter.rate = 0.92;
+  if(jaVoices.length) utter.voice = jaVoices[0];
+  if(btnEl){
+    btnEl.classList.add("speaking");
+    utter.onend = () => btnEl.classList.remove("speaking");
+    utter.onerror = () => btnEl.classList.remove("speaking");
+  }
+  speechSynthesis.speak(utter);
+}
+
+/* ---------------- 유틸 ---------------- */
+function escapeHtml(str){
+  return String(str ?? "").replace(/[&<>"']/g, (c) => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+  }[c]));
+}
+
+/* ---------------- API ---------------- */
+async function fetchToday(){
+  const listEl = document.getElementById("list");
+  listEl.innerHTML = `<div class="loading">오늘의 문장을 준비하는 중이에요… (처음이라면 Claude가 새로 생성하고 있어요, 몇 초 걸릴 수 있어요)</div>`;
+  try{
+    const res = await fetch("/api/today");
+    if(res.status === 401){
+      renderPasswordGate();
+      return;
+    }
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error || "알 수 없는 오류");
+    today = data;
+    render();
+  }catch(e){
+    listEl.innerHTML = `<div class="error-state">문장을 불러오지 못했어요.<pre>${e.message}</pre>서버 콘솔 로그와 .env의 ANTHROPIC_API_KEY 설정을 확인해주세요.</div>`;
+  }
+}
+
+function renderPasswordGate(){
+  const listEl = document.getElementById("list");
+  listEl.innerHTML = `
+    <form id="pwForm" style="display:flex;flex-direction:column;gap:12px;background:var(--washi);color:var(--sumi);padding:28px;max-width:280px;margin:40px auto 0;">
+      <div style="font-family:'Shippori Mincho',serif;font-size:17px;">비밀번호를 입력해주세요</div>
+      <input type="password" id="pwInput" required autofocus
+        style="padding:11px;border:1px solid #ccc;font-size:15px;font-family:'Noto Sans KR',sans-serif;" />
+      <button type="submit"
+        style="padding:11px;background:var(--hanko);color:#fff;border:none;font-weight:600;font-size:14px;cursor:pointer;">입장</button>
+      <div id="pwErr" style="color:var(--hanko);font-size:12.5px;display:none;">비밀번호가 틀렸어요.</div>
+    </form>`;
+  document.getElementById("pwForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const pw = document.getElementById("pwInput").value;
+    const res = await fetch("/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "password=" + encodeURIComponent(pw),
+    });
+    if(res.redirected && res.url.includes("error=1")){
+      document.getElementById("pwErr").style.display = "block";
+    } else {
+      fetchToday();
+    }
+  };
+}
+
+async function postJSON(url, body){
+  const res = await fetch(url, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body||{}) });
+  const data = await res.json();
+  if(!res.ok) throw new Error(data.error || "요청 실패");
+  return data;
+}
+
+/* ---------------- 렌더링 ---------------- */
+function catCounts(sentences){
+  const c = {all:sentences.length, travel:0, daily:0, intermediate:0};
+  sentences.forEach(s => { c[s.category] = (c[s.category] || 0) + 1; });
+  return c;
+}
+
+function render(){
+  if(!today) return;
+  document.getElementById("todayLabel").textContent = today.date.replaceAll("-",".");
+  document.getElementById("dayIndexLabel").textContent = today.dayIndex + "일차";
+  document.getElementById("remainLabel").textContent = `지금까지 생성된 문장 ${today.totalGenerated}개 · 총 학습 완료 ${today.totalCompleted}개`;
+
+  const sentences = today.sentences;
+  const counts = catCounts(sentences);
+  const tabsEl = document.getElementById("tabs");
+  tabsEl.innerHTML = "";
+  Object.keys(CATEGORY_LABEL).forEach(key=>{
+    const btn = document.createElement("button");
+    btn.className = "tab" + (currentFilter===key ? " active":"");
+    btn.innerHTML = `${CATEGORY_LABEL[key]}<span class="count">${counts[key]||0}</span>`;
+    btn.onclick = () => { currentFilter = key; render(); };
+    tabsEl.appendChild(btn);
+  });
+
+  const doneIdsToday = [...today.sessionCompleted, ...today.sessionDiscarded];
+  const doneCount = sentences.filter(s=>doneIdsToday.includes(s.id)).length;
+  document.getElementById("doneCount").textContent = doneCount;
+  document.getElementById("totalCount").textContent = sentences.length;
+  const pct = sentences.length ? Math.round(doneCount/sentences.length*100) : 0;
+  document.getElementById("progressFill").style.width = pct + "%";
+
+  const filtered = currentFilter==="all" ? sentences : sentences.filter(s=>s.category===currentFilter);
+  const listEl = document.getElementById("list");
+  listEl.innerHTML = "";
+
+  filtered.forEach(s=>{
+    const isDone = doneIdsToday.includes(s.id);
+    const isDiscarded = today.sessionDiscarded.includes(s.id);
+    const card = document.createElement("div");
+    card.className = "card" + (isDone?" done":"") + (openCardId===s.id?" open":"");
+    card.innerHTML = `
+      <div class="stamp-mark">${isDiscarded ? "略" : "済"}</div>
+      <div class="card-head">
+        <div class="badge ${s.category}">${CATEGORY_STAMP[s.category]||"文"}</div>
+        <div class="card-main">
+          <div class="jp-text">${escapeHtml(s.jp)}</div>
+          <div class="reading">${escapeHtml(s.reading)}</div>
+        </div>
+        <svg class="chev" viewBox="0 0 20 20" fill="none"><path d="M5 7l5 5 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="card-body">
+        <div class="card-body-inner">
+          <p class="meaning">${escapeHtml(s.kr)}</p>
+          <div class="tags">${(s.tags||[]).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join("")}</div>
+          <div class="card-actions">
+            <button class="icon-btn" data-act="speak" title="발음 듣기">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 9v6h4l5 5V4L8 9H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 010 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </button>
+            <div class="spacer"></div>
+            <button class="act-btn ghost" data-act="discard">폐기</button>
+            <button class="act-btn" data-act="complete">학습 완료</button>
+          </div>
+        </div>
+      </div>
+    `;
+    card.querySelector(".card-head").onclick = () => { openCardId = openCardId===s.id ? null : s.id; render(); };
+    card.querySelector('[data-act="speak"]').onclick = (e) => { e.stopPropagation(); speak(s.jp, e.currentTarget); };
+    card.querySelector('[data-act="complete"]').onclick = async (e) => {
+      e.stopPropagation();
+      await postJSON("/api/complete", { id: s.id });
+      await fetchToday();
+    };
+    card.querySelector('[data-act="discard"]').onclick = async (e) => {
+      e.stopPropagation();
+      await postJSON("/api/discard", { id: s.id });
+      await fetchToday();
+    };
+    listEl.appendChild(card);
+  });
+}
+
+document.getElementById("resetDiscardBtn").onclick = async () => {
+  await postJSON("/api/reset-discard");
+  await fetchToday();
+};
+
+document.getElementById("nextDayBtn").onclick = async () => {
+  const btn = document.getElementById("nextDayBtn");
+  btn.disabled = true; btn.textContent = "생성 중...";
+  try{
+    await postJSON("/api/dev/advance-date");
+    await fetchToday();
+  }catch(e){
+    alert("다음 날 생성 실패: " + e.message);
+  }finally{
+    btn.disabled = false; btn.textContent = "데모: 다음 날 문장 새로 생성 →";
+  }
+};
+
+document.getElementById("resetDateBtn").onclick = async () => {
+  const btn = document.getElementById("resetDateBtn");
+  btn.disabled = true;
+  try{
+    await postJSON("/api/dev/reset-date");
+    await fetchToday();
+  }catch(e){
+    alert("날짜 리셋 실패: " + e.message);
+  }finally{
+    btn.disabled = false;
+  }
+};
+
+fetchToday();
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch((e) => console.warn("SW 등록 실패:", e));
+  });
+}
+</script>
+</body>
+</html>
