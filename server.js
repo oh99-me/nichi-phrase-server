@@ -159,15 +159,7 @@ app.use(cookieParser());
      실제 문장 데이터를 주는 /api/* 요청만 비밀번호로 막습니다.
      (이래야 PWABuilder 같은 외부 크롤러도 앱을 정상적으로 인식합니다.)
 --------------------------------------------------------------------- */
-function requireAuth(req, res, next) {
-  const pw = process.env.SITE_PASSWORD;
-  if (!pw) return next();
-  if (!req.path.startsWith("/api/")) return next();
-  const token = req.cookies && req.cookies.nichi_auth;
-  const db = readDB();
-  if (token && db.authTokens.includes(token)) return next();
-  return res.status(401).json({ error: "비밀번호 인증이 필요합니다." });
-}
+function requireAuth(req, res, next) { return next(); }
 app.use(requireAuth);
 
 app.get("/login", (req, res) => {
