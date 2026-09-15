@@ -85,6 +85,7 @@
   .badge.intermediate{ background:#8E6B3E; }
   .card-main{ flex:1 1 auto; min-width:0; }
   .jp-text{ font-family:'Zen Old Mincho', serif; font-weight:600; font-size:26px; line-height:1.5; letter-spacing:.01em; }
+  .jp-text, .reading, .meaning{ user-select: text; -webkit-user-select: text; -webkit-touch-callout: default; }
   .reading{ font-size:16px; color: var(--sumi-soft); margin-top:4px; }
   .chev{ flex:0 0 auto; width:18px; height:18px; color: var(--sumi-soft); transition: transform .25s ease; }
   .card.open .chev{ transform: rotate(180deg); }
@@ -316,7 +317,11 @@ function render(){
         </div>
       </div>
     `;
-    card.querySelector(".card-head").onclick = () => { openCardId = openCardId===s.id ? null : s.id; render(); };
+    card.querySelector(".card-head").onclick = () => {
+  const sel = window.getSelection();
+  if (sel && sel.toString().length > 0) return; // 문장을 드래그로 선택 중이면 토글을 막아 선택이 풀리지 않게 함
+  openCardId = openCardId===s.id ? null : s.id; render();
+};
     card.querySelector('[data-act="speak"]').onclick = (e) => { e.stopPropagation(); speak(s.jp, e.currentTarget); };
     card.querySelector('[data-act="complete"]').onclick = async (e) => {
       e.stopPropagation();
