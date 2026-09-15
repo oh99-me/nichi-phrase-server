@@ -270,7 +270,7 @@ app.get("/api/export", (req, res) => {
   // 학습 완료 여부와 상관없이, 폐기(discard)하지 않은 모든 생성 문장을 내보냄
   const lines = db.history
     .filter((s) => !db.discardedAll.includes(s.id))
-    .map((s) => `${s.jp} - ${s.kr}`);
+    .map((s) => `${s.jp} (${s.reading}) - ${s.kr}`);
   res.setHeader("Content-Type", "text/plain; charset=utf-8");
   res.setHeader(
     "Content-Disposition",
