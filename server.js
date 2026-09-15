@@ -267,12 +267,10 @@ app.post("/api/reset-discard", (req, res) => {
 
 app.get("/api/export", (req, res) => {
   const db = readDB();
-  const lines = db.completedAll
-    .map((id) => {
-      const s = db.history.find((h) => h.id === id);
-      return s ? `${s.jp} - ${s.kr}` : null;
-    })
-    .filter(Boolean);
+  // 학습 완료 여부와 상관없이, 폐기(discard)하지 않은 모든 생성 문장을 내보냄
+  const lines = db.history
+    .filter((s) => !db.discardedAll.includes(s.id))
+    .map((s) => `${s.jp} - ${s.kr}`);
   res.setHeader("Content-Type", "text/plain; charset=utf-8");
   res.setHeader(
     "Content-Disposition",
